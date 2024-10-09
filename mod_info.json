@@ -1,0 +1,11 @@
+{
+    "id":"ShoeyColonyHelper",
+	"name":"Colony Helper",
+	"author":"Shoey",
+    "utility":"true",
+    "version": { "major":"0", "minor": "1", "patch": "0" },
+	"description":"",
+    "gameVersion": "0.97a-RC11",
+  	"jars":["jars/ColonyHelper.jar"],
+  	"modPlugin":"Shoey.ColonyHelper.MainPlugin"
+}
