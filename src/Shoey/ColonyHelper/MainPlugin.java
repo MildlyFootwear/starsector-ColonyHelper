@@ -1,4 +1,5 @@
 package Shoey.ColonyHelper;
+import Shoey.ColonyHelper.Util.SizeSort;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.BaseModPlugin;
 import com.fs.starfarer.api.campaign.SpecialItemData;
@@ -10,10 +11,7 @@ import kotlin.random.Random;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 
 public class MainPlugin extends BaseModPlugin {
@@ -40,7 +38,7 @@ public class MainPlugin extends BaseModPlugin {
         }
     }
 
-    public static String GenDesc(List<MarketAPI> validMarkets)
+    public static void GenDesc(List<MarketAPI> validMarkets)
     {
         log.debug("Generating descriptions");
 //        List<MarketAPI> marketsWithItemlesses = new ArrayList<>();
@@ -53,10 +51,10 @@ public class MainPlugin extends BaseModPlugin {
 //                if (i.getSpecialItem() == null || i.getSpecialItem().getId() == null)
 //                {
 //                    marketsWithItemlesses.add(m);
-////                    log.debug("SpecItem for "+m.getName()+i.getCurrentName()+ " not found");
+//                    log.debug("SpecItem for "+m.getName()+i.getCurrentName()+ " not found");
 //                    break;
-////                } else {
-////                    log.debug("SpecItem for "+m.getName()+i.getCurrentName()+ ": "+i.getSpecialItem().getId());
+//                } else {
+//                    log.debug("SpecItem for "+m.getName()+i.getCurrentName()+ ": "+i.getSpecialItem().getId());
 //                }
 //            }
 //
@@ -68,6 +66,7 @@ public class MainPlugin extends BaseModPlugin {
 
             String industriesforitem = item.getParams();
             String addendum = "Useful for colonies ";
+            Collections.sort(validMarkets, new SizeSort());
             for (MarketAPI m : validMarkets)
             {
                 for (Industry i : m.getIndustries())
@@ -78,10 +77,8 @@ public class MainPlugin extends BaseModPlugin {
 
                     if (industriesforitem.contains(i.getSpec().getId())) {
                         for (InstallableIndustryItemPlugin ip : i.getInstallableItems()) {
-                            if (ip == null || !ip.isMenuItemEnabled())
-                                continue;
-                            else if (ip.canBeInstalled(new SpecialItemData(item.getId(), item.getParams()))) {
-                                addendum += m.getName() + ", ";
+                            if (ip != null && ip.isMenuItemEnabled() && ip.canBeInstalled(new SpecialItemData(item.getId(), item.getParams()))) {
+                                addendum += m.getName() + " ("+m.getSize()+"), ";
                                 needBreak = true;
                                 break;
                             }
@@ -89,12 +86,6 @@ public class MainPlugin extends BaseModPlugin {
                         if (needBreak)
                             break;
                     }
-
-//
-//                    if (industriesforitem.contains(i.getSpec().getId())) {
-//                        addendum += m.getName()+", ";
-//                        break;
-//                    }
                 }
             }
             String s = item.getDesc();
@@ -106,8 +97,6 @@ public class MainPlugin extends BaseModPlugin {
                 log.error("Description for "+item.getName()+" already modified");
 
         }
-
-        return null;
     }
 
     public static void resetSIDescs()
