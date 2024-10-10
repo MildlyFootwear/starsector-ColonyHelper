@@ -112,6 +112,10 @@ public class MainPlugin extends BaseModPlugin {
 
     public static void resetSIDescs()
     {
+        if (DefaultDescriptions.isEmpty()) {
+            InitBaseSIDescMap();
+            return;
+        }
         log.debug("Resetting item descriptions");
         for (SpecialItemSpecAPI item : DefaultDescriptions.keySet())
         {
@@ -128,7 +132,7 @@ public class MainPlugin extends BaseModPlugin {
     @Override
     public void onGameLoad(boolean b) {
         super.onGameLoad(b);
-        Global.getSector().addTransientScript(new ColonyCheckerEveryFrame());
+        Global.getSector().getListenerManager().addListener(new CoreUIListener(), true);
     }
 
     @Override
