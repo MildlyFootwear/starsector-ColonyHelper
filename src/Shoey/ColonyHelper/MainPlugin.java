@@ -31,7 +31,7 @@ public class MainPlugin extends BaseModPlugin {
             {
                 log.error(item.getId()+": "+item.getName()+" has already been modified, this is likely an error.");
             } else {
-                log.debug("Putting in map; "+item.getName()+": "+item.getDesc());
+//                log.debug("Putting in map; "+item.getName()+": "+item.getDesc());
                 DefaultDescriptions.put(item, s);
             }
 
@@ -41,32 +41,30 @@ public class MainPlugin extends BaseModPlugin {
     public static void GenDesc(List<MarketAPI> validMarkets)
     {
         log.debug("Generating descriptions");
-//        List<MarketAPI> marketsWithItemlesses = new ArrayList<>();
 //        for (MarketAPI m : validMarkets)
 //        {
 //            if (m == null)
 //                continue;
+//            log.debug("Checking market "+m.getName());
 //            for (Industry i : m.getIndustries())
 //            {
 //                if (i.getSpecialItem() == null || i.getSpecialItem().getId() == null)
 //                {
-//                    marketsWithItemlesses.add(m);
 //                    log.debug("SpecItem for "+m.getName()+i.getCurrentName()+ " not found");
-//                    break;
 //                } else {
 //                    log.debug("SpecItem for "+m.getName()+i.getCurrentName()+ ": "+i.getSpecialItem().getId());
 //                }
 //            }
-//
 //        }
 
         for (SpecialItemSpecAPI item : DefaultDescriptions.keySet())
         {
-            log.debug("Generating for "+item.getName());
+            //log.debug("Generating for "+item.getName());
 
             String industriesforitem = item.getParams();
-            String addendum = "Useful for colonies ";
             Collections.sort(validMarkets, new SizeSort());
+            int usefulMarkets = 0;
+            List<String> marketsUsable = new ArrayList<>();
             for (MarketAPI m : validMarkets)
             {
                 for (Industry i : m.getIndustries())
@@ -78,7 +76,7 @@ public class MainPlugin extends BaseModPlugin {
                     if (industriesforitem.contains(i.getSpec().getId())) {
                         for (InstallableIndustryItemPlugin ip : i.getInstallableItems()) {
                             if (ip != null && ip.isMenuItemEnabled() && ip.canBeInstalled(new SpecialItemData(item.getId(), item.getParams()))) {
-                                addendum += m.getName() + " ("+m.getSize()+"), ";
+                                marketsUsable.add(m.getName() + " ("+m.getSize()+")");
                                 needBreak = true;
                                 break;
                             }
@@ -87,11 +85,24 @@ public class MainPlugin extends BaseModPlugin {
                             break;
                     }
                 }
+                if (usefulMarkets > 5)
+                    break;
             }
             String s = item.getDesc();
-            if (addendum != "Useful for colonies " && !s.contains("Useful for colonies "))
+            if (!marketsUsable.isEmpty() && !s.contains("Useful for colonies "))
             {
-                s += "\n\n" + addendum.substring(0, addendum.length()-2)+".";
+                s += "\n\n";
+                if (marketsUsable.size() == 1)
+                {
+                    s += "Useful for colony "+marketsUsable.get(0)+".";
+                } else {
+                    s += "Useful for colonies ";
+                    for (int i = 0; i < marketsUsable.size() && i < 5; i++)
+                    {
+                        s += marketsUsable.get(i)+", ";
+                    }
+                    s = s.substring(0, s.length() - 2)+".";
+                }
                 item.setDesc(s);
             } else if (s.contains("Useful for colonies "))
                 log.error("Description for "+item.getName()+" already modified");
