@@ -1,12 +1,12 @@
 {
   "masterVersionFile": "https://raw.githubusercontent.com/MildlyFootwear/starsector-ColonyHelper/refs/heads/master/Shoey_ColonyHelper.version",
 
-  "modName": "",
+  "modName": "Colony Helper",
   "modVersion":
     {
       "major": 0,
       "minor": 1,
       "patch": 0
     },
-  "modThreadId": "",
+  "modThreadId": "30786",
 }
