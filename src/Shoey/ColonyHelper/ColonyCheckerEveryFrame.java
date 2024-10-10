@@ -38,7 +38,7 @@ public class ColonyCheckerEveryFrame implements EveryFrameScript {
                     if (m.getFaction() == Global.getSector().getPlayerFaction())
                         playerMarkets.add(m);
                 }
-                GenDesc(Global.getSector().getEconomy().getMarketsCopy());
+                GenDesc(playerMarkets);
             }
         } else {
 
