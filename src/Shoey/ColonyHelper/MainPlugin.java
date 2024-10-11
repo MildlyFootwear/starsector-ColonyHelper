@@ -27,7 +27,7 @@ public class MainPlugin extends BaseModPlugin {
             if (item == null || item.getId() == null || !item.hasTag("pather4"))
                 continue;
             String s = item.getDesc();
-            if (s.contains("Useful for colonies "))
+            if (s.contains("Useful for colon"))
             {
                 log.error(item.getId()+": "+item.getName()+" has already been modified, this is likely an error.");
             } else {
@@ -63,7 +63,6 @@ public class MainPlugin extends BaseModPlugin {
 
             String industriesforitem = item.getParams();
             Collections.sort(validMarkets, new SizeSort());
-            int usefulMarkets = 0;
             List<String> marketsUsable = new ArrayList<>();
             for (MarketAPI m : validMarkets)
             {
@@ -85,8 +84,6 @@ public class MainPlugin extends BaseModPlugin {
                             break;
                     }
                 }
-                if (usefulMarkets > 5)
-                    break;
             }
             String s = item.getDesc();
             if (!marketsUsable.isEmpty() && !s.contains("Useful for colonies "))
