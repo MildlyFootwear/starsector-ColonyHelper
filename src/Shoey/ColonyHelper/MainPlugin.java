@@ -86,7 +86,7 @@ public class MainPlugin extends BaseModPlugin {
                 }
             }
             String s = item.getDesc();
-            if (!marketsUsable.isEmpty() && !s.contains("Useful for colonies "))
+            if (!marketsUsable.isEmpty() && !s.contains("Useful for colon"))
             {
                 s += "\n\n";
                 if (marketsUsable.size() == 1)
@@ -101,7 +101,7 @@ public class MainPlugin extends BaseModPlugin {
                     s = s.substring(0, s.length() - 2)+".";
                 }
                 item.setDesc(s);
-            } else if (s.contains("Useful for colonies "))
+            } else if (s.contains("Useful for colon"))
                 log.error("Description for "+item.getName()+" already modified");
 
         }
