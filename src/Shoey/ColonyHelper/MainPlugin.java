@@ -94,9 +94,9 @@ public class MainPlugin extends BaseModPlugin {
                     s += "Useful for colony "+marketsUsable.get(0)+".";
                 } else {
                     s += "Useful for colonies ";
-                    for (int i = 0; i < marketsUsable.size() && i < 5; i++)
+                    for (int c = 0; c < marketsUsable.size() && c < 5; c++)
                     {
-                        s += marketsUsable.get(i)+", ";
+                        s += marketsUsable.get(c)+", ";
                     }
                     s = s.substring(0, s.length() - 2)+".";
                 }
