@@ -66,7 +66,7 @@ public class MainPlugin extends BaseModPlugin {
 
     public static void setDesc(SpecialItemSpecAPI item, FactionAPI faction, List<FactionAPI> alreadychecked)
     {
-        log.debug("Looking for markets for "+item.getName()+" in faction "+faction.getDisplayName());
+        log.debug("Looking for markets for "+item.getName()+" in faction "+faction.getDisplayName()+", "+faction.getId());
         List<MarketAPI> validMarkets = factionMarketMap.get(faction);
         String industriesforitem = item.getParams();
         Collections.sort(validMarkets, new SizeSort());
@@ -82,7 +82,7 @@ public class MainPlugin extends BaseModPlugin {
                 if (industriesforitem.contains(i.getSpec().getId())) {
                     for (InstallableIndustryItemPlugin ip : i.getInstallableItems()) {
                         if (ip != null && ip.isMenuItemEnabled() && ip.canBeInstalled(new SpecialItemData(item.getId(), item.getParams()))) {
-                            marketsUsable.add(m.getName() + " ("+m.getSize()+")");
+                            marketsUsable.add(m.getName() + " ("+m.getStarSystem().getName()+", "+m.getSize()+")");
                             needBreak = true;
                             break;
                         }
@@ -121,13 +121,16 @@ public class MainPlugin extends BaseModPlugin {
             float iRelate = 0.1f;
             for (FactionAPI t : factionMarketMap.keySet())
             {
-                if (t.getRelToPlayer().getRel() > iRelate && !checked.contains(t))
+                float rel = t.getRelToPlayer().getRel();
+                if (t.getId().equals("independent"))
+                    rel /= 2;
+                if (!checked.contains(t) && rel > iRelate)
                 {
                     f = t;
                     iRelate = t.getRelToPlayer().getRel();
                 }
             }
-            if (f != null)
+            if (f != null && !checked.contains(f))
             {
                 setDesc(item, f, checked);
             }
