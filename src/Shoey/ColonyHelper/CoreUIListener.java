@@ -27,6 +27,6 @@ public class CoreUIListener implements CoreInteractionListener, CoreUITabListene
         if (factionMarketMap.isEmpty())
             genFacMarketMap();
 
-        GenDesc(factionMarketMap.get(Global.getSector().getPlayerFaction()));
+        GenDesc();
     }
 }

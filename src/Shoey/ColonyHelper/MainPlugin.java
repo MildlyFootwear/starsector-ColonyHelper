@@ -12,6 +12,7 @@ import kotlin.random.Random;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.lf5.LogLevel;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -63,8 +64,10 @@ public class MainPlugin extends BaseModPlugin {
         }
     }
 
-    public static void setDesc(SpecialItemSpecAPI item, List<MarketAPI> validMarkets)
+    public static void setDesc(SpecialItemSpecAPI item, FactionAPI faction, List<FactionAPI> alreadychecked)
     {
+        log.debug("Looking for markets for "+item.getName()+" in faction "+faction.getDisplayName());
+        List<MarketAPI> validMarkets = factionMarketMap.get(faction);
         String industriesforitem = item.getParams();
         Collections.sort(validMarkets, new SizeSort());
         List<String> marketsUsable = new ArrayList<>();
@@ -90,14 +93,14 @@ public class MainPlugin extends BaseModPlugin {
             }
         }
         String s = item.getDesc();
-        if (!marketsUsable.isEmpty() && !s.contains("Useful for colon"))
+        if (!marketsUsable.isEmpty() && !s.contains("Useful for "+faction.getDisplayName()+" colon"))
         {
             s += "\n\n";
             if (marketsUsable.size() == 1)
             {
-                s += "Useful for colony "+marketsUsable.get(0)+".";
+                s += "Useful for "+faction.getDisplayName()+" colony "+marketsUsable.get(0)+".";
             } else {
-                s += "Useful for colonies ";
+                s += "Useful for "+faction.getDisplayName()+" colonies ";
                 for (int i = 0; i < marketsUsable.size() && i < 5; i++)
                 {
                     s += marketsUsable.get(i)+", ";
@@ -105,62 +108,59 @@ public class MainPlugin extends BaseModPlugin {
                 s = s.substring(0, s.length() - 2)+".";
             }
             item.setDesc(s);
-        } else if (s.contains("Useful for colon"))
-            log.error("Description for "+item.getName()+" already modified");
+        } else if (s.contains("Useful for ")) {
+            log.error("Description for " + item.getName() + " already modified");
+        } else if (marketsUsable.isEmpty()) {
+            log.debug("Found no markets for "+item.getName()+" in faction "+faction.getDisplayName());
+            List<FactionAPI> checked = new ArrayList<>();
+            if (alreadychecked != null) {
+                checked.addAll(0, alreadychecked);
+            }
+            checked.add(faction);
+            FactionAPI f = null;
+            float iRelate = 0.1f;
+            for (FactionAPI t : factionMarketMap.keySet())
+            {
+                if (t.getRelToPlayer().getRel() > iRelate && !checked.contains(t))
+                {
+                    f = t;
+                    iRelate = t.getRelToPlayer().getRel();
+                }
+            }
+            if (f != null)
+            {
+                setDesc(item, f, checked);
+            }
+        }
     }
 
-    public static void GenDesc(List<MarketAPI> validMarkets)
+    public static void setDesc(SpecialItemSpecAPI item, FactionAPI faction)
+    {
+        setDesc(item, faction, null);
+    }
+
+    public static void GenDesc()
     {
         log.debug("Generating descriptions");
 
-        for (SpecialItemSpecAPI item : DefaultDescriptions.keySet())
+        FactionAPI f = Global.getSector().getPlayerFaction();
+        if (f == null)
         {
-            setDesc(item, validMarkets);
-            //log.debug("Generating for "+item.getName());
-
-            String industriesforitem = item.getParams();
-            Collections.sort(validMarkets, new SizeSort());
-            List<String> marketsUsable = new ArrayList<>();
-            for (MarketAPI m : validMarkets)
+            float iRelate = 0.1f;
+            for (FactionAPI t : factionMarketMap.keySet())
             {
-                for (Industry i : m.getIndustries())
+                if (t.getRelToPlayer().getRel() > iRelate)
                 {
-                    boolean needBreak = false;
-                    if (i == null || i.getSpecialItem() != null && i.getSpecialItem().getId() != null)
-                        continue;
-
-                    if (industriesforitem.contains(i.getSpec().getId())) {
-                        for (InstallableIndustryItemPlugin ip : i.getInstallableItems()) {
-                            if (ip != null && ip.isMenuItemEnabled() && ip.canBeInstalled(new SpecialItemData(item.getId(), item.getParams()))) {
-                                marketsUsable.add(m.getName() + " ("+m.getSize()+")");
-                                needBreak = true;
-                                break;
-                            }
-                        }
-                        if (needBreak)
-                            break;
-                    }
+                    f = t;
+                    iRelate = t.getRelToPlayer().getRel();
                 }
             }
-            String s = item.getDesc();
-            if (!marketsUsable.isEmpty() && !s.contains("Useful for colon"))
-            {
-                s += "\n\n";
-                if (marketsUsable.size() == 1)
-                {
-                    s += "Useful for colony "+marketsUsable.get(0)+".";
-                } else {
-                    s += "Useful for colonies ";
-                    for (int i = 0; i < marketsUsable.size() && i < 5; i++)
-                    {
-                        s += marketsUsable.get(i)+", ";
-                    }
-                    s = s.substring(0, s.length() - 2)+".";
-                }
-                item.setDesc(s);
-            } else if (s.contains("Useful for colon"))
-                log.error("Description for "+item.getName()+" already modified");
-
+        }
+        if (f == null)
+            return;
+        for (SpecialItemSpecAPI item : DefaultDescriptions.keySet())
+        {
+            setDesc(item, f);
         }
     }
 
