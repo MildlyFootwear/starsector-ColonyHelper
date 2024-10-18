@@ -116,6 +116,51 @@ public class MainPlugin extends BaseModPlugin {
         for (SpecialItemSpecAPI item : DefaultDescriptions.keySet())
         {
             setDesc(item, validMarkets);
+            //log.debug("Generating for "+item.getName());
+
+            String industriesforitem = item.getParams();
+            Collections.sort(validMarkets, new SizeSort());
+            List<String> marketsUsable = new ArrayList<>();
+            for (MarketAPI m : validMarkets)
+            {
+                for (Industry i : m.getIndustries())
+                {
+                    boolean needBreak = false;
+                    if (i == null || i.getSpecialItem() != null && i.getSpecialItem().getId() != null)
+                        continue;
+
+                    if (industriesforitem.contains(i.getSpec().getId())) {
+                        for (InstallableIndustryItemPlugin ip : i.getInstallableItems()) {
+                            if (ip != null && ip.isMenuItemEnabled() && ip.canBeInstalled(new SpecialItemData(item.getId(), item.getParams()))) {
+                                marketsUsable.add(m.getName() + " ("+m.getSize()+")");
+                                needBreak = true;
+                                break;
+                            }
+                        }
+                        if (needBreak)
+                            break;
+                    }
+                }
+            }
+            String s = item.getDesc();
+            if (!marketsUsable.isEmpty() && !s.contains("Useful for colon"))
+            {
+                s += "\n\n";
+                if (marketsUsable.size() == 1)
+                {
+                    s += "Useful for colony "+marketsUsable.get(0)+".";
+                } else {
+                    s += "Useful for colonies ";
+                    for (int i = 0; i < marketsUsable.size() && i < 5; i++)
+                    {
+                        s += marketsUsable.get(i)+", ";
+                    }
+                    s = s.substring(0, s.length() - 2)+".";
+                }
+                item.setDesc(s);
+            } else if (s.contains("Useful for colon"))
+                log.error("Description for "+item.getName()+" already modified");
+
         }
     }
 
