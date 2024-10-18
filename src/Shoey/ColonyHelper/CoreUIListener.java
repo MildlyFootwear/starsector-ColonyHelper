@@ -3,6 +3,7 @@ package Shoey.ColonyHelper;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CoreInteractionListener;
 import com.fs.starfarer.api.campaign.CoreUITabId;
+import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.campaign.listeners.CoreUITabListener;
 
@@ -15,17 +16,17 @@ public class CoreUIListener implements CoreInteractionListener, CoreUITabListene
     @Override
     public void coreUIDismissed() {
         resetSIDescs();
+        for (List<MarketAPI> l : factionMarketMap.values())
+            l.clear();
     }
 
     @Override
     public void reportAboutToOpenCoreTab(CoreUITabId tab, Object param) {
         resetSIDescs();
-        List<MarketAPI> playerMarkets = new ArrayList<>();
-        for (MarketAPI m : Global.getSector().getEconomy().getMarketsCopy())
-        {
-            if (m.getFaction() == Global.getSector().getPlayerFaction())
-                playerMarkets.add(m);
-        }
-        GenDesc(playerMarkets);
+
+        if (factionMarketMap.isEmpty())
+            genFacMarketMap();
+
+        GenDesc(factionMarketMap.get(Global.getSector().getPlayerFaction()));
     }
 }
