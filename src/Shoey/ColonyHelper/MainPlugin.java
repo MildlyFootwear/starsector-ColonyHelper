@@ -64,7 +64,7 @@ public class MainPlugin extends BaseModPlugin {
         }
     }
 
-    public static void setDesc(SpecialItemSpecAPI item, FactionAPI faction, List<FactionAPI> alreadychecked)
+    public static void setDesc(SpecialItemSpecAPI item, FactionAPI faction, boolean recursive, List<FactionAPI> alreadychecked)
     {
         log.debug("Looking for markets for "+item.getName()+" in faction "+faction.getDisplayName()+", "+faction.getId());
         List<MarketAPI> validMarkets = factionMarketMap.get(faction);
@@ -108,38 +108,49 @@ public class MainPlugin extends BaseModPlugin {
                 s = s.substring(0, s.length() - 2)+".";
             }
             item.setDesc(s);
+            return;
         } else if (s.contains("Useful for ")) {
             log.error("Description for " + item.getName() + " already modified");
+            return;
         } else if (marketsUsable.isEmpty()) {
             log.debug("Found no markets for "+item.getName()+" in faction "+faction.getDisplayName());
-            List<FactionAPI> checked = new ArrayList<>();
-            if (alreadychecked != null) {
-                checked.addAll(0, alreadychecked);
-            }
-            checked.add(faction);
-            FactionAPI f = null;
-            float iRelate = 0.1f;
-            for (FactionAPI t : factionMarketMap.keySet())
+        }
+
+        if (!recursive)
+            return;
+
+        List<FactionAPI> checked = new ArrayList<>();
+        if (alreadychecked != null) {
+            checked.addAll(0, alreadychecked);
+        }
+        checked.add(faction);
+        FactionAPI f = null;
+        float iRelate = 0.1f;
+        for (FactionAPI t : factionMarketMap.keySet())
+        {
+            float rel = t.getRelToPlayer().getRel();
+            if (t.getId().equals("independent"))
+                rel /= 2;
+            if (!checked.contains(t) && rel > iRelate)
             {
-                float rel = t.getRelToPlayer().getRel();
-                if (t.getId().equals("independent"))
-                    rel /= 2;
-                if (!checked.contains(t) && rel > iRelate)
-                {
-                    f = t;
-                    iRelate = t.getRelToPlayer().getRel();
-                }
-            }
-            if (f != null && !checked.contains(f))
-            {
-                setDesc(item, f, checked);
+                f = t;
+                iRelate = t.getRelToPlayer().getRel();
             }
         }
+        if (f != null && !checked.contains(f))
+        {
+            setDesc(item, f, true, checked);
+        }
+
     }
 
     public static void setDesc(SpecialItemSpecAPI item, FactionAPI faction)
     {
-        setDesc(item, faction, null);
+        setDesc(item, faction, true);
+    }
+    public static void setDesc(SpecialItemSpecAPI item, FactionAPI faction, boolean recursive)
+    {
+        setDesc(item, faction, recursive, null);
     }
 
     public static void GenDesc()
