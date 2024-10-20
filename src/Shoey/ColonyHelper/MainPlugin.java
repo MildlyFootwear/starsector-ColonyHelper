@@ -24,7 +24,7 @@ public class MainPlugin extends BaseModPlugin {
     public static HashMap<SpecialItemSpecAPI, String> DefaultDescriptions = new HashMap<>();
     public static HashMap<FactionAPI, List<MarketAPI>> factionMarketMap = new HashMap<>();
 
-    static Level logLevel = Level.DEBUG;
+    static Level logLevel = Level.INFO;
 
     public static void genFacMarketMap()
     {
@@ -66,33 +66,39 @@ public class MainPlugin extends BaseModPlugin {
 
     public static void setDesc(SpecialItemSpecAPI item, FactionAPI faction, boolean recursive, List<FactionAPI> alreadychecked)
     {
-        log.debug("Looking for markets for "+item.getName()+" in faction "+faction.getDisplayName()+", "+faction.getId());
+        log.info("Looking for markets for "+item.getName()+" in faction "+faction.getDisplayName()+", "+faction.getId());
         List<MarketAPI> validMarkets = factionMarketMap.get(faction);
         String industriesforitem = item.getParams();
-        Collections.sort(validMarkets, new SizeSort());
         List<String> marketsUsable = new ArrayList<>();
-        for (MarketAPI m : validMarkets)
-        {
-            for (Industry i : m.getIndustries())
+        try {
+            log.debug("Checking through "+validMarkets.size());
+            Collections.sort(validMarkets, new SizeSort());
+            for (MarketAPI m : validMarkets)
             {
-                boolean needBreak = false;
-                if (i == null || i.getSpecialItem() != null && i.getSpecialItem().getId() != null)
-                    continue;
+                for (Industry i : m.getIndustries())
+                {
+                    boolean needBreak = false;
+                    if (i == null || i.getSpecialItem() != null && i.getSpecialItem().getId() != null)
+                        continue;
 
-                if (industriesforitem.contains(i.getSpec().getId())) {
-                    for (InstallableIndustryItemPlugin ip : i.getInstallableItems()) {
-                        if (ip != null && ip.isMenuItemEnabled() && ip.canBeInstalled(new SpecialItemData(item.getId(), item.getParams()))) {
-                            marketsUsable.add(m.getName() + " ("+m.getStarSystem().getName().replace(" Star System","")+", "+m.getSize()+")");
-                            needBreak = true;
-                            break;
+                    if (industriesforitem.contains(i.getSpec().getId())) {
+                        for (InstallableIndustryItemPlugin ip : i.getInstallableItems()) {
+                            if (ip != null && ip.isMenuItemEnabled() && ip.canBeInstalled(new SpecialItemData(item.getId(), item.getParams()))) {
+                                marketsUsable.add(m.getName() + " ("+m.getStarSystem().getName().replace(" Star System","")+", "+m.getSize()+")");
+                                needBreak = true;
+                                break;
+                            }
                         }
+                        if (needBreak)
+                            break;
                     }
-                    if (needBreak)
-                        break;
                 }
             }
+        } catch (Exception e) {
+
         }
-        String s = item.getDesc();
+
+        String s = item.getDesc()+"\n";
         if (!marketsUsable.isEmpty() && !s.contains("Useful for "+faction.getDisplayName()+" colon"))
         {
             s += "\n\n";
@@ -155,10 +161,10 @@ public class MainPlugin extends BaseModPlugin {
 
     public static void GenDesc()
     {
-        log.debug("Generating descriptions");
+        log.info("Generating descriptions");
 
         FactionAPI f = Global.getSector().getPlayerFaction();
-        if (f == null)
+        if (!factionMarketMap.containsKey(f) || factionMarketMap.get(f) == null || factionMarketMap.get(f).isEmpty())
         {
             float iRelate = 0.1f;
             for (FactionAPI t : factionMarketMap.keySet())
@@ -170,7 +176,7 @@ public class MainPlugin extends BaseModPlugin {
                 }
             }
         }
-        if (f == null)
+        if (!factionMarketMap.containsKey(f) || factionMarketMap.get(f) == null || factionMarketMap.get(f).isEmpty())
             return;
         for (SpecialItemSpecAPI item : DefaultDescriptions.keySet())
         {
@@ -184,7 +190,7 @@ public class MainPlugin extends BaseModPlugin {
             InitBaseSIDescMap();
             return;
         }
-        log.debug("Resetting item descriptions");
+        log.info("Resetting item descriptions");
         for (SpecialItemSpecAPI item : DefaultDescriptions.keySet())
         {
             item.setDesc(DefaultDescriptions.get(item));
