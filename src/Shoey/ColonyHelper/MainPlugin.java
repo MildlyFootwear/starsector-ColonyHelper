@@ -82,7 +82,7 @@ public class MainPlugin extends BaseModPlugin {
                 if (industriesforitem.contains(i.getSpec().getId())) {
                     for (InstallableIndustryItemPlugin ip : i.getInstallableItems()) {
                         if (ip != null && ip.isMenuItemEnabled() && ip.canBeInstalled(new SpecialItemData(item.getId(), item.getParams()))) {
-                            marketsUsable.add(m.getName() + " ("+m.getStarSystem().getName()+", "+m.getSize()+")");
+                            marketsUsable.add(m.getName() + " ("+m.getStarSystem().getName().replace(" Star System","")+", "+m.getSize()+")");
                             needBreak = true;
                             break;
                         }
