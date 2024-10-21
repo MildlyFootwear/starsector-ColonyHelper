@@ -164,7 +164,7 @@ public class MainPlugin extends BaseModPlugin {
         log.info("Generating descriptions");
 
         FactionAPI f = Global.getSector().getPlayerFaction();
-        if (!factionMarketMap.containsKey(f) || factionMarketMap.get(f) == null || factionMarketMap.get(f).isEmpty())
+        if (!(factionMarketMap.containsKey(f)) || factionMarketMap.get(f) == null || factionMarketMap.get(f).isEmpty())
         {
             float iRelate = 0.1f;
             for (FactionAPI t : factionMarketMap.keySet())
