@@ -8,11 +8,8 @@ import com.fs.starfarer.api.campaign.SpecialItemSpecAPI;
 import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.InstallableIndustryItemPlugin;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
-import kotlin.random.Random;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.lf5.LogLevel;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -24,7 +21,7 @@ public class MainPlugin extends BaseModPlugin {
     public static HashMap<SpecialItemSpecAPI, String> DefaultDescriptions = new HashMap<>();
     public static HashMap<FactionAPI, List<MarketAPI>> factionMarketMap = new HashMap<>();
 
-    static Level logLevel = Level.INFO;
+    static Level logLevel = Level.OFF;
 
     public static void genFacMarketMap()
     {
@@ -64,13 +61,22 @@ public class MainPlugin extends BaseModPlugin {
         }
     }
 
-    public static void setDesc(SpecialItemSpecAPI item, FactionAPI faction, boolean recursive, List<FactionAPI> alreadychecked)
+    public static void setDescWithColonies(SpecialItemSpecAPI item, FactionAPI faction)
+    {
+        setDescWithColonies(item, faction, true);
+    }
+    public static void setDescWithColonies(SpecialItemSpecAPI item, FactionAPI faction, boolean recursive)
+    {
+        setDescWithColonies(item, faction, recursive, null);
+    }
+
+    public static void setDescWithColonies(SpecialItemSpecAPI item, FactionAPI faction, boolean recursive, List<FactionAPI> alreadychecked)
     {
         log.info("Looking for markets for "+item.getName()+" in faction "+faction.getDisplayName()+", "+faction.getId());
         List<MarketAPI> validMarkets = factionMarketMap.get(faction);
         String industriesforitem = item.getParams();
         List<String> marketsUsable = new ArrayList<>();
-        try {
+        if (validMarkets != null) {
             log.debug("Checking through "+validMarkets.size());
             Collections.sort(validMarkets, new SizeSort());
             for (MarketAPI m : validMarkets)
@@ -94,8 +100,6 @@ public class MainPlugin extends BaseModPlugin {
                     }
                 }
             }
-        } catch (Exception e) {
-
         }
 
         String s = item.getDesc()+"\n";
@@ -145,42 +149,35 @@ public class MainPlugin extends BaseModPlugin {
         }
         if (f != null && !checked.contains(f))
         {
-            setDesc(item, f, true, checked);
+            setDescWithColonies(item, f, true, checked);
         }
 
-    }
-
-    public static void setDesc(SpecialItemSpecAPI item, FactionAPI faction)
-    {
-        setDesc(item, faction, true);
-    }
-    public static void setDesc(SpecialItemSpecAPI item, FactionAPI faction, boolean recursive)
-    {
-        setDesc(item, faction, recursive, null);
     }
 
     public static void GenDesc()
     {
         log.info("Generating descriptions");
 
-        FactionAPI f = Global.getSector().getPlayerFaction();
-        if (!(factionMarketMap.containsKey(f)) || factionMarketMap.get(f) == null || factionMarketMap.get(f).isEmpty())
-        {
+        FactionAPI start = null;
+        if (factionMarketMap.containsKey(Global.getSector().getPlayerFaction())) {
+            log.info("Starting with player faction.");
+            start = Global.getSector().getPlayerFaction();
+        } else {
             float iRelate = 0.1f;
             for (FactionAPI t : factionMarketMap.keySet())
             {
                 if (t.getRelToPlayer().getRel() > iRelate)
                 {
-                    f = t;
+                    start = t;
                     iRelate = t.getRelToPlayer().getRel();
                 }
             }
         }
-        if (!factionMarketMap.containsKey(f) || factionMarketMap.get(f) == null || factionMarketMap.get(f).isEmpty())
+        if (!factionMarketMap.containsKey(start))
             return;
         for (SpecialItemSpecAPI item : DefaultDescriptions.keySet())
         {
-            setDesc(item, f);
+            setDescWithColonies(item, start);
         }
     }
 

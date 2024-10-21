@@ -22,11 +22,12 @@ public class CoreUIListener implements CoreInteractionListener, CoreUITabListene
 
     @Override
     public void reportAboutToOpenCoreTab(CoreUITabId tab, Object param) {
-        resetSIDescs();
-
-        if (factionMarketMap.isEmpty())
-            genFacMarketMap();
-
-        GenDesc();
+        if (tab == CoreUITabId.REFIT || tab == CoreUITabId.OUTPOSTS) {
+            resetSIDescs();
+            if (factionMarketMap.isEmpty()) {
+                genFacMarketMap();
+            }
+            GenDesc();
+        }
     }
 }
