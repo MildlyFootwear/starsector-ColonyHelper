@@ -7,5 +7,15 @@
 	"description":"QoL tweaks for colony management.",
     "gameVersion": "0.97a-RC11",
   	"jars":["jars/ColonyHelper.jar"],
+	"dependencies": [
+		{
+			"id": "lw_lazylib",
+			"name": "LazyLib"
+		},
+		{
+			"id": "lunalib",
+			"name": "LunaLib"
+		}
+	],
   	"modPlugin":"Shoey.ColonyHelper.MainPlugin"
 }

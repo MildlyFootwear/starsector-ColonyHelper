@@ -1,4 +1,5 @@
 package Shoey.ColonyHelper;
+import Shoey.ColonyHelper.Util.MarketParsers;
 import Shoey.ColonyHelper.Util.SizeSort;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.BaseModPlugin;
@@ -13,6 +14,8 @@ import org.apache.log4j.Logger;
 
 import java.util.*;
 
+import static Shoey.ColonyHelper.Util.MarketParsers.findItemMarketsForFaction;
+
 
 public class MainPlugin extends BaseModPlugin {
 
@@ -21,7 +24,9 @@ public class MainPlugin extends BaseModPlugin {
     public static HashMap<SpecialItemSpecAPI, String> DefaultDescriptions = new HashMap<>();
     public static HashMap<FactionAPI, List<MarketAPI>> factionMarketMap = new HashMap<>();
 
-    static Level logLevel = Level.OFF;
+    public static int maxShown = 5;
+
+    static Level logLevel = Level.INFO;
 
     public static void genFacMarketMap()
     {
@@ -73,34 +78,7 @@ public class MainPlugin extends BaseModPlugin {
     public static void setDescWithColonies(SpecialItemSpecAPI item, FactionAPI faction, boolean recursive, List<FactionAPI> alreadychecked)
     {
         log.info("Looking for markets for "+item.getName()+" in faction "+faction.getDisplayName()+", "+faction.getId());
-        List<MarketAPI> validMarkets = factionMarketMap.get(faction);
-        String industriesforitem = item.getParams();
-        List<String> marketsUsable = new ArrayList<>();
-        if (validMarkets != null) {
-            log.debug("Checking through "+validMarkets.size());
-            Collections.sort(validMarkets, new SizeSort());
-            for (MarketAPI m : validMarkets)
-            {
-                for (Industry i : m.getIndustries())
-                {
-                    boolean needBreak = false;
-                    if (i == null || i.getSpecialItem() != null && i.getSpecialItem().getId() != null)
-                        continue;
-
-                    if (industriesforitem.contains(i.getSpec().getId())) {
-                        for (InstallableIndustryItemPlugin ip : i.getInstallableItems()) {
-                            if (ip != null && ip.isMenuItemEnabled() && ip.canBeInstalled(new SpecialItemData(item.getId(), item.getParams()))) {
-                                marketsUsable.add(m.getName() + " ("+m.getStarSystem().getName().replace(" Star System","")+", "+m.getSize()+")");
-                                needBreak = true;
-                                break;
-                            }
-                        }
-                        if (needBreak)
-                            break;
-                    }
-                }
-            }
-        }
+        List<MarketAPI> marketsUsable = findItemMarketsForFaction(item, faction);
 
         String s = item.getDesc()+"\n";
         if (!marketsUsable.isEmpty() && !s.contains("Useful for "+faction.getDisplayName()+" colon"))
@@ -108,14 +86,25 @@ public class MainPlugin extends BaseModPlugin {
             s += "\n\n";
             if (marketsUsable.size() == 1)
             {
-                s += "Useful for "+faction.getDisplayName()+" colony "+marketsUsable.get(0)+".";
+                MarketAPI m = marketsUsable.get(0);
+                s += "Useful for "+faction.getDisplayName()+" colony ";
+                s += m.getName() + " (" + m.getStarSystem().getBaseName() + ", " + m.getSize()+").";
             } else {
                 s += "Useful for "+faction.getDisplayName()+" colonies ";
-                for (int i = 0; i < marketsUsable.size() && i < 5; i++)
+                for (int i = 0; i < marketsUsable.size() && i < maxShown; i++)
                 {
-                    s += marketsUsable.get(i)+", ";
+                    MarketAPI m = marketsUsable.get(i);
+                    s += m.getName() + " (" + m.getStarSystem().getBaseName() + ", " + m.getSize()+")";
+                    if (i != maxShown -1) {
+                        s += ", ";
+                    } else {
+                        if (marketsUsable.size() - maxShown > 0) {
+                            s += " and " + (marketsUsable.size() - maxShown) + " more.";
+                        } else {
+                            s += ".";
+                        }
+                    }
                 }
-                s = s.substring(0, s.length() - 2)+".";
             }
             item.setDesc(s);
             return;
@@ -159,6 +148,7 @@ public class MainPlugin extends BaseModPlugin {
         log.info("Generating descriptions");
 
         FactionAPI start = null;
+
         if (factionMarketMap.containsKey(Global.getSector().getPlayerFaction())) {
             log.info("Starting with player faction.");
             start = Global.getSector().getPlayerFaction();
@@ -173,8 +163,10 @@ public class MainPlugin extends BaseModPlugin {
                 }
             }
         }
+
         if (!factionMarketMap.containsKey(start))
             return;
+
         for (SpecialItemSpecAPI item : DefaultDescriptions.keySet())
         {
             setDescWithColonies(item, start);

@@ -22,7 +22,7 @@ public class CoreUIListener implements CoreInteractionListener, CoreUITabListene
 
     @Override
     public void reportAboutToOpenCoreTab(CoreUITabId tab, Object param) {
-        if (tab == CoreUITabId.REFIT || tab == CoreUITabId.OUTPOSTS) {
+        if (tab == CoreUITabId.CARGO || tab == CoreUITabId.OUTPOSTS) {
             resetSIDescs();
             if (factionMarketMap.isEmpty()) {
                 genFacMarketMap();
