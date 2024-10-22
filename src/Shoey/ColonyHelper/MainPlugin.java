@@ -56,7 +56,7 @@ public class MainPlugin extends BaseModPlugin {
             if (item == null || item.getId() == null || !item.hasTag("pather4"))
                 continue;
             String s = item.getDesc();
-            if (s.contains("Useful for colon"))
+            if (s.contains("\nUseful for"))
             {
                 log.error(item.getId()+": "+item.getName()+" has already been modified, this is likely an error.");
             } else {
@@ -80,8 +80,8 @@ public class MainPlugin extends BaseModPlugin {
         log.info("Looking for markets for "+item.getName()+" in faction "+faction.getDisplayName()+", "+faction.getId());
         List<MarketAPI> marketsUsable = findItemMarketsForFaction(item, faction);
 
-        String s = item.getDesc()+"\n";
-        if (!marketsUsable.isEmpty() && !s.contains("Useful for "+faction.getDisplayName()+" colon"))
+        String s = item.getDesc();
+        if (!marketsUsable.isEmpty() && !s.contains("\nUseful for "))
         {
             s += "\n\n";
             if (marketsUsable.size() == 1)
