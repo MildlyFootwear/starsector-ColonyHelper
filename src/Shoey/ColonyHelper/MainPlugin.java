@@ -1,14 +1,10 @@
 package Shoey.ColonyHelper;
-import Shoey.ColonyHelper.Util.MarketParsers;
-import Shoey.ColonyHelper.Util.SizeSort;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.BaseModPlugin;
 import com.fs.starfarer.api.campaign.FactionAPI;
-import com.fs.starfarer.api.campaign.SpecialItemData;
 import com.fs.starfarer.api.campaign.SpecialItemSpecAPI;
-import com.fs.starfarer.api.campaign.econ.Industry;
-import com.fs.starfarer.api.campaign.econ.InstallableIndustryItemPlugin;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
+import lunalib.lunaSettings.LunaSettings;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -24,9 +20,21 @@ public class MainPlugin extends BaseModPlugin {
     public static HashMap<SpecialItemSpecAPI, String> DefaultDescriptions = new HashMap<>();
     public static HashMap<FactionAPI, List<MarketAPI>> factionMarketMap = new HashMap<>();
 
-    public static int maxShown = 5;
+    public static int maxFactionsShown = 5;
+    public static int maxMarketsShown = 5;
 
     static Level logLevel = Level.INFO;
+
+    public static void setLuna()
+    {
+        maxFactionsShown = LunaSettings.getInt("ShoeyColonyHelper", "maxFactionsShown");
+        maxMarketsShown = LunaSettings.getInt("ShoeyColonyHelper", "maxMarketsShown");
+        if (LunaSettings.getBoolean("ShoeyColonyHelper", "Debugging"))
+            logLevel = Level.DEBUG;
+        else
+            logLevel = Level.INFO;
+        log.setLevel(logLevel);
+    }
 
     public static void genFacMarketMap()
     {
@@ -72,34 +80,38 @@ public class MainPlugin extends BaseModPlugin {
     }
     public static void setDescWithColonies(SpecialItemSpecAPI item, FactionAPI faction, boolean recursive)
     {
-        setDescWithColonies(item, faction, recursive, null);
+        setDescWithColonies(item, faction, recursive, null, 0);
     }
 
-    public static void setDescWithColonies(SpecialItemSpecAPI item, FactionAPI faction, boolean recursive, List<FactionAPI> alreadychecked)
+    public static void setDescWithColonies(SpecialItemSpecAPI item, FactionAPI faction, boolean recursive, List<FactionAPI> alreadyChecked, int numFactionsShown)
     {
         log.info("Looking for markets for "+item.getName()+" in faction "+faction.getDisplayName()+", "+faction.getId());
         List<MarketAPI> marketsUsable = findItemMarketsForFaction(item, faction);
 
         String s = item.getDesc();
-        if (!marketsUsable.isEmpty() && !s.contains("\nUseful for "))
+        int newShown = numFactionsShown;
+        if (!marketsUsable.isEmpty())
         {
-            s += "\n\n";
+            newShown++;
+            if (newShown == 1)
+                s += "\n\nUseful for;";
+            s += "\n    ";
             if (marketsUsable.size() == 1)
             {
                 MarketAPI m = marketsUsable.get(0);
-                s += "Useful for "+faction.getDisplayName()+" colony ";
+                s += "1 "+faction.getDisplayName()+" colony: ";
                 s += m.getName() + " (" + m.getStarSystem().getBaseName() + ", " + m.getSize()+").";
             } else {
-                s += "Useful for "+faction.getDisplayName()+" colonies ";
-                for (int i = 0; i < marketsUsable.size() && i < maxShown; i++)
+                s += marketsUsable.size()+" "+faction.getDisplayName()+" colonies: ";
+                for (int i = 0; i < marketsUsable.size() && i < maxMarketsShown; i++)
                 {
                     MarketAPI m = marketsUsable.get(i);
                     s += m.getName() + " (" + m.getStarSystem().getBaseName() + ", " + m.getSize()+")";
-                    if (i != maxShown -1) {
+                    if (i != maxMarketsShown -1) {
                         s += ", ";
                     } else {
-                        if (marketsUsable.size() - maxShown > 0) {
-                            s += " and " + (marketsUsable.size() - maxShown) + " more.";
+                        if (marketsUsable.size() - maxMarketsShown > 0) {
+                            s += " and " + (marketsUsable.size() - maxMarketsShown) + " more.";
                         } else {
                             s += ".";
                         }
@@ -107,11 +119,8 @@ public class MainPlugin extends BaseModPlugin {
                 }
             }
             item.setDesc(s);
-            return;
-        } else if (s.contains("Useful for ")) {
-            log.error("Description for " + item.getName() + " already modified");
-            return;
-        } else if (marketsUsable.isEmpty()) {
+//            return;
+        } else {
             log.debug("Found no markets for "+item.getName()+" in faction "+faction.getDisplayName());
         }
 
@@ -119,8 +128,8 @@ public class MainPlugin extends BaseModPlugin {
             return;
 
         List<FactionAPI> checked = new ArrayList<>();
-        if (alreadychecked != null) {
-            checked.addAll(0, alreadychecked);
+        if (alreadyChecked != null) {
+            checked.addAll(0, alreadyChecked);
         }
         checked.add(faction);
         FactionAPI f = null;
@@ -136,9 +145,9 @@ public class MainPlugin extends BaseModPlugin {
                 iRelate = t.getRelToPlayer().getRel();
             }
         }
-        if (f != null && !checked.contains(f))
+        if (f != null && !checked.contains(f) && newShown < maxFactionsShown)
         {
-            setDescWithColonies(item, f, true, checked);
+            setDescWithColonies(item, f, true, checked, newShown);
         }
 
     }
@@ -175,27 +184,28 @@ public class MainPlugin extends BaseModPlugin {
 
     public static void resetSIDescs()
     {
-        if (DefaultDescriptions.isEmpty()) {
-            InitBaseSIDescMap();
-            return;
-        }
         log.info("Resetting item descriptions");
         for (SpecialItemSpecAPI item : DefaultDescriptions.keySet())
         {
             item.setDesc(DefaultDescriptions.get(item));
+            log.info("Reset description of "+item);
         }
     }
 
     @Override
     public void onApplicationLoad() throws Exception {
         super.onApplicationLoad();
-        log.setLevel(logLevel);
+        setLuna();
+        InitBaseSIDescMap();
+        LunaSettings.addSettingsListener(new LunaListener());
     }
 
     @Override
     public void onGameLoad(boolean b) {
         super.onGameLoad(b);
+        setLuna();
         Global.getSector().getListenerManager().addListener(new CoreUIListener(), true);
+        resetSIDescs();
     }
 
     @Override

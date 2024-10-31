@@ -16,8 +16,8 @@ public class CoreUIListener implements CoreInteractionListener, CoreUITabListene
     @Override
     public void coreUIDismissed() {
         resetSIDescs();
-        for (List<MarketAPI> l : factionMarketMap.values())
-            l.clear();
+        log.info("Clearing faction market map.");
+        factionMarketMap.clear();
     }
 
     @Override

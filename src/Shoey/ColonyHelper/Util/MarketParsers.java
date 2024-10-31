@@ -26,6 +26,9 @@ public class MarketParsers {
         for (MarketAPI m : validMarkets)
         {
 
+            if (m.getSize() < 3)
+                continue;
+
             for (Industry i : m.getIndustries())
             {
 
@@ -44,6 +47,7 @@ public class MarketParsers {
                     }
                     if (needBreak)
                         break;
+
                 }
 
             }
