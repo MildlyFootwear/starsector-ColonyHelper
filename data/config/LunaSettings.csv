@@ -11,7 +11,7 @@ maxFactionsShown,Max Factions to Show,Int,5,,"How many factions are allowed to b
 maxMarketsShown,Max Markets to Show,Int,5,,"How many markets can be listed, any more will be tallied and added as a number to the end.",1,9,Items
 addIndustry,Show Industry Name,Boolean,FALSE,,,,,Items
 addSize,Show Size,Boolean,TRUE,,,,,Items
-addSystem,Show System Name,Boolean,TRUE,,,,,
+addSystem,Show System Name,Boolean,TRUE,,,,,Items
 ,,,,,,,,
 ,,,,,,,,
 ,,,,,,,,

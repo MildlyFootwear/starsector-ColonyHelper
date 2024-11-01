@@ -2,10 +2,8 @@ package Shoey.ColonyHelper;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.BaseModPlugin;
 import com.fs.starfarer.api.campaign.FactionAPI;
-import com.fs.starfarer.api.campaign.SpecialItemData;
 import com.fs.starfarer.api.campaign.SpecialItemSpecAPI;
 import com.fs.starfarer.api.campaign.econ.Industry;
-import com.fs.starfarer.api.campaign.econ.InstallableIndustryItemPlugin;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import lunalib.lunaSettings.LunaSettings;
 import org.apache.log4j.Level;
@@ -192,15 +190,13 @@ public class MainPlugin extends BaseModPlugin {
         checked.add(faction);
         FactionAPI f = null;
         float iRelate = 0.1f;
-        for (FactionAPI t : factionMarketMap.keySet())
+        for (FactionAPI factionAPI : factionMarketMap.keySet())
         {
-            float rel = t.getRelToPlayer().getRel();
-            if (t.getId().equals("independent"))
-                rel /= 2;
-            if (!checked.contains(t) && rel > iRelate)
+            float rel = factionAPI.getRelToPlayer().getRel();
+            if (!checked.contains(factionAPI) && rel > iRelate)
             {
-                f = t;
-                iRelate = t.getRelToPlayer().getRel();
+                f = factionAPI;
+                iRelate = factionAPI.getRelToPlayer().getRel();
             }
         }
         if (f != null && !checked.contains(f) && newShown < maxFactionsShown)
@@ -221,12 +217,12 @@ public class MainPlugin extends BaseModPlugin {
             start = Global.getSector().getPlayerFaction();
         } else {
             float iRelate = 0.1f;
-            for (FactionAPI t : factionMarketMap.keySet())
+            for (FactionAPI factionAPI : factionMarketMap.keySet())
             {
-                if (t.getRelToPlayer().getRel() > iRelate)
+                if (factionAPI.getRelToPlayer().getRel() > iRelate)
                 {
-                    start = t;
-                    iRelate = t.getRelToPlayer().getRel();
+                    start = factionAPI;
+                    iRelate = factionAPI.getRelToPlayer().getRel();
                 }
             }
         }
