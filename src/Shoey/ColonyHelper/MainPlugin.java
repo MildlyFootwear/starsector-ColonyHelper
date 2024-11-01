@@ -96,13 +96,18 @@ public class MainPlugin extends BaseModPlugin {
             if (newShown == 1)
                 s += "\n\nUseful for;";
             s += "\n    ";
+            String factionString = "";
+            if (faction == Global.getSector().getPlayerFaction())
+                factionString = "Player faction";
+            else
+                factionString = faction.getDisplayName();
             if (marketsUsable.size() == 1)
             {
                 MarketAPI m = marketsUsable.get(0);
-                s += "1 "+faction.getDisplayName()+" colony: ";
+                s += "1 "+factionString+" colony: ";
                 s += m.getName() + " (" + m.getStarSystem().getBaseName() + ", " + m.getSize()+").";
             } else {
-                s += marketsUsable.size()+" "+faction.getDisplayName()+" colonies: ";
+                s += marketsUsable.size()+" "+factionString+" colonies: ";
                 for (int i = 0; i < marketsUsable.size() && i < maxMarketsShown; i++)
                 {
                     MarketAPI m = marketsUsable.get(i);
