@@ -8,10 +8,10 @@ fieldID,fieldName,fieldType,defaultValue,secondaryValue,fieldDescription,minValu
 ,,,,,,,,
 TooltipHeader,Tooltips,Header,Tooltips,,,,,Items
 maxFactionsShown,Max Factions to Show,Int,5,,"How many factions are allowed to be shown in any given tooltip. The amount shown will usually be less, depending on how many factions you are on good terms with.",1,9,Items
-maxMarketsShown,Max Markets to Show,Int,5,,"Scroll right through the core campaign menu; open the Refit tab from Fleet, open Intel from Map.",1,9,Items
-,,,,,,,,
-,,,,,,,,
-,,,,,,,,
+maxMarketsShown,Max Markets to Show,Int,5,,"How many markets can be listed, any more will be tallied and added as a number to the end.",1,9,Items
+addIndustry,Show Industry Name,Boolean,FALSE,,,,,Items
+addSize,Show Size,Boolean,TRUE,,,,,Items
+addSystem,Show System Name,Boolean,TRUE,,,,,
 ,,,,,,,,
 ,,,,,,,,
 ,,,,,,,,

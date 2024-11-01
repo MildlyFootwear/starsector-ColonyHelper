@@ -2,7 +2,10 @@ package Shoey.ColonyHelper;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.BaseModPlugin;
 import com.fs.starfarer.api.campaign.FactionAPI;
+import com.fs.starfarer.api.campaign.SpecialItemData;
 import com.fs.starfarer.api.campaign.SpecialItemSpecAPI;
+import com.fs.starfarer.api.campaign.econ.Industry;
+import com.fs.starfarer.api.campaign.econ.InstallableIndustryItemPlugin;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import lunalib.lunaSettings.LunaSettings;
 import org.apache.log4j.Level;
@@ -10,7 +13,8 @@ import org.apache.log4j.Logger;
 
 import java.util.*;
 
-import static Shoey.ColonyHelper.Util.MarketParsers.findItemMarketsForFaction;
+import static Shoey.ColonyHelper.Util.Parsers.canIndustryUseItem;
+import static Shoey.ColonyHelper.Util.Parsers.findItemMarketsForFaction;
 
 
 public class MainPlugin extends BaseModPlugin {
@@ -22,6 +26,7 @@ public class MainPlugin extends BaseModPlugin {
 
     public static int maxFactionsShown = 5;
     public static int maxMarketsShown = 5;
+    public static boolean addSystem = true, addSize = true, addIndustry = true;
 
     static Level logLevel = Level.INFO;
 
@@ -33,6 +38,9 @@ public class MainPlugin extends BaseModPlugin {
             logLevel = Level.DEBUG;
         else
             logLevel = Level.INFO;
+        addSystem = LunaSettings.getBoolean("ShoeyColonyHelper", "addSystem");
+        addSize = LunaSettings.getBoolean("ShoeyColonyHelper", "addSize");
+        addIndustry = LunaSettings.getBoolean("ShoeyColonyHelper", "addIndustry");
         log.setLevel(logLevel);
     }
 
@@ -105,14 +113,59 @@ public class MainPlugin extends BaseModPlugin {
             {
                 MarketAPI m = marketsUsable.get(0);
                 s += "1 "+factionString+" colony: ";
-                s += m.getName() + " (" + m.getStarSystem().getBaseName() + ", " + m.getSize()+").";
+                s += m.getName();
+                String addendum = " (";
+                if (addIndustry)
+                {
+                    for (Industry i : m.getIndustries())
+                    {
+                        if (i == null || i.getSpecialItem() != null && i.getSpecialItem().getId() != null)
+                            continue;
+
+                        if (canIndustryUseItem(i, item)) {
+                            addendum += i.getCurrentName() + ", ";
+                        }
+                    }
+                }
+                if (addSize) {
+                    addendum += m.getSize() + ", ";
+                }
+                if (addSystem) {
+                    addendum += m.getStarSystem().getBaseName() + ", ";
+                }
+                if (addendum.equals(" ("))
+                    s += ".";
+                else
+                    s += addendum.substring(0, addendum.lastIndexOf(", ")) +").";
             } else {
                 s += marketsUsable.size()+" "+factionString+" colonies: ";
-                for (int i = 0; i < marketsUsable.size() && i < maxMarketsShown; i++)
+                for (int c = 0; c < marketsUsable.size() && c < maxMarketsShown; c++)
                 {
-                    MarketAPI m = marketsUsable.get(i);
-                    s += m.getName() + " (" + m.getStarSystem().getBaseName() + ", " + m.getSize()+")";
-                    if (i != maxMarketsShown -1) {
+                    MarketAPI m = marketsUsable.get(c);
+                    s += m.getName();
+                    String addendum = " (";
+                    if (addIndustry)
+                    {
+                        for (Industry i : m.getIndustries())
+                        {
+                            if (i == null || i.getSpecialItem() != null && i.getSpecialItem().getId() != null)
+                                continue;
+
+                            if (canIndustryUseItem(i, item)) {
+                                addendum += i.getCurrentName() + ", ";
+                            }
+                        }
+                    }
+                    if (addSize) {
+                        addendum += m.getSize() + ", ";
+                    }
+                    if (addSystem) {
+                        addendum += m.getStarSystem().getBaseName() + ", ";
+                    }
+                    if (!addendum.equals(" ("))
+                        s += addendum.substring(0, addendum.lastIndexOf(", ")) +")";
+
+                    if (c != maxMarketsShown -1) {
                         s += ", ";
                     } else {
                         if (marketsUsable.size() - maxMarketsShown > 0) {
