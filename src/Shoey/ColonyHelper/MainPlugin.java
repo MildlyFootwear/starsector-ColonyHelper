@@ -67,7 +67,9 @@ public class MainPlugin extends BaseModPlugin {
     {
         for (SpecialItemSpecAPI item : Global.getSettings().getAllSpecialItemSpecs())
         {
-            if (item == null || item.getId() == null || !item.hasTag("pather4"))
+            if (item == null || item.getId() == null)
+                continue;
+            if (!item.hasTag("pather4") && !item.hasTag("pather8"))
                 continue;
             String s = item.getDesc();
             if (s.contains("\nUseful for"))
