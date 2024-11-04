@@ -51,16 +51,6 @@ public class MainPlugin extends BaseModPlugin {
                 factionMarketMap.put(f, new ArrayList<MarketAPI>());
             factionMarketMap.get(f).add(m);
         }
-        if (logLevel == Level.DEBUG)
-        {
-            for (FactionAPI f : factionMarketMap.keySet()) {
-                log.debug(f.getDisplayName());
-                for(MarketAPI m : factionMarketMap.get(f))
-                {
-                    log.debug(m.getName());
-                }
-            }
-        }
     }
 
     public static void InitBaseSIDescMap()
@@ -93,7 +83,7 @@ public class MainPlugin extends BaseModPlugin {
 
     public static void setDescWithColonies(SpecialItemSpecAPI item, FactionAPI faction, boolean recursive, List<FactionAPI> alreadyChecked, int numFactionsShown)
     {
-        log.info("Looking for markets for "+item.getName()+" in faction "+faction.getDisplayName()+", "+faction.getId());
+        log.debug("Looking for markets for "+item.getName()+" in faction "+faction.getDisplayName()+", "+faction.getId());
         List<MarketAPI> marketsUsable = findItemMarketsForFaction(item, faction);
 
         String s = item.getDesc();
