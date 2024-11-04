@@ -3,7 +3,7 @@
 	"name":"Colony Helper",
 	"author":"Shoey",
     "utility":"true",
-    "version": { "major":"0", "minor": "1", "patch": "5" },
+    "version": { "major":"0", "minor": "1", "patch": "6" },
 	"description":"QoL tweaks for colony management.",
     "gameVersion": "0.97a-RC11",
   	"jars":["jars/ColonyHelper.jar"],

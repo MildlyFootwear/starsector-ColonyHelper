@@ -12,21 +12,14 @@ import java.util.List;
 
 import static Shoey.ColonyHelper.MainPlugin.*;
 
-public class CoreUIListener implements CoreInteractionListener, CoreUITabListener {
-    @Override
-    public void coreUIDismissed() {
-        resetSIDescs();
-        log.info("Clearing faction market map.");
-        factionMarketMap.clear();
-    }
+public class CoreUIListener implements CoreUITabListener {
 
     @Override
     public void reportAboutToOpenCoreTab(CoreUITabId tab, Object param) {
         if (tab == CoreUITabId.CARGO || tab == CoreUITabId.OUTPOSTS) {
+            factionMarketMap.clear();
             resetSIDescs();
-            if (factionMarketMap.isEmpty()) {
-                genFacMarketMap();
-            }
+            genFacMarketMap();
             GenDesc();
         }
     }
