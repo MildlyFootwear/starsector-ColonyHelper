@@ -47,8 +47,12 @@ public class MainPlugin extends BaseModPlugin {
         for (MarketAPI m : Global.getSector().getEconomy().getMarketsCopy())
         {
             FactionAPI f  = m.getFaction();
-            if (!factionMarketMap.containsKey(f))
+            if (m.isPlayerOwned()) {
+                f = Global.getSector().getPlayerFaction();
+            }
+            if (!factionMarketMap.containsKey(f)) {
                 factionMarketMap.put(f, new ArrayList<MarketAPI>());
+            }
             factionMarketMap.get(f).add(m);
         }
     }
